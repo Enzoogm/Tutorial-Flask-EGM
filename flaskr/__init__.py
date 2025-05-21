@@ -1,28 +1,7 @@
 import os
+
 from flask import Flask
-import sqlite3
-from datetime import datetime
 
-import click
-from flask import current_app, g
-
-
-def get_db():
-    if 'db' not in g:
-        g.db = sqlite3.connect(
-            current_app.config['DATABASE'],
-            detect_types=sqlite3.PARSE_DECLTYPES
-        )
-        g.db.row_factory = sqlite3.Row
-
-    return g.db
-
-
-def close_db(e=None):
-    db = g.pop('db', None)
-
-    if db is not None:
-        db.close()
 
 def create_app(test_config=None):
     # create and configure the app
@@ -50,4 +29,16 @@ def create_app(test_config=None):
     def hello():
         return 'Hello, World!'
 
+
+    from . import db
+    db.init_app(app)
+    
+    from . import auth
+    app.register_blueprint(auth.bp)
+
+    from . import blog
+    app.register_blueprint(blog.bp)
+    app.add_url_rule('/', endpoint='index')
+    
     return app
+
